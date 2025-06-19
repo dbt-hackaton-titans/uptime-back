@@ -62,7 +62,25 @@ namespace Titans.Uptime.Tests.ServiceTests
             Assert.Equal(created.Id, found.Id);
             Assert.Equal("Sistema principal", found.Description);
         }
+
+        [Fact]
+        public async Task GetAllAsync_ShouldReturnAllSystems()
+        {
+            // Arrange
+            var dbContext = TestHelpers.CreateInMemoryContext();
+            ISystemService service = new SystemService(dbContext);
+
+            // Agrega varios sistemas
+            await service.CreateAsync(new CreateSystemRequest { Name = "A" });
+            await service.CreateAsync(new CreateSystemRequest { Name = "B" });
+
+            // Act
+            var all = (await service.GetAllAsync()).ToList();
+
+            // Assert
+            Assert.Equal(2, all.Count);
+            Assert.Contains(all, s => s.Name == "A");
+            Assert.Contains(all, s => s.Name == "B");
+        }
     }
-
-
 }
