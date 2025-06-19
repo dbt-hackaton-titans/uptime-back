@@ -20,9 +20,15 @@ namespace Titans.Uptime.Application.Services
             _context = context;
         }
 
-        public Task<IEnumerable<SystemDto>> GetAllAsync()
+        public async Task<IEnumerable<SystemDto>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var systems = new List<SystemDto>
+            {
+                new SystemDto { Id = 1, Name = "A", Description = "Sistema A" },
+                new SystemDto { Id = 2, Name = "B", Description = "Sistema B" }
+            };
+
+            return await Task.FromResult(systems);
         }
         public async Task<SystemDto?> GetByIdAsync(int id)
         {
