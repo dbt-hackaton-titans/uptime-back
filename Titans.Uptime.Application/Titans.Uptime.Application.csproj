@@ -7,11 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Titans.Uptime.Domain\Titans.Uptime.Domain.csproj" />
     <ProjectReference Include="..\Titans.Uptime.Persistence\Titans.Uptime.Persistence.csproj" />
   </ItemGroup>
