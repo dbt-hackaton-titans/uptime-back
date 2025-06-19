@@ -29,7 +29,12 @@ namespace Titans.Uptime.Application.Services
         }
         public Task<SystemDto> CreateAsync(CreateSystemRequest request)
         {
-            throw new NotImplementedException();
+            SystemDto result = new SystemDto();
+            result.Id = 1; // Simulating an ID assignment
+            result.Name = request.Name;
+            result.Description = request.Description ?? string.Empty;
+
+            return Task.FromResult(result);
         }
         public Task<SystemDto?> UpdateAsync(int id, CreateSystemRequest request)
         {
