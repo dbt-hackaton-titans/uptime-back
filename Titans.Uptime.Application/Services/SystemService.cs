@@ -27,14 +27,26 @@ namespace Titans.Uptime.Application.Services
         {
             throw new NotImplementedException();
         }
-        public Task<SystemDto> CreateAsync(CreateSystemRequest request)
+        public async Task<SystemDto> CreateAsync(CreateSystemRequest request)
         {
-            SystemDto result = new SystemDto();
-            result.Id = 1; // Simulating an ID assignment
-            result.Name = request.Name;
-            result.Description = request.Description ?? string.Empty;
+            var system = new SystemEntity
+            {
+                Name = request.Name,
+                Description = request.Description,
+                CreatedAt = DateTime.UtcNow
+            };
 
-            return Task.FromResult(result);
+            _context.Systems.Add(system);
+            await _context.SaveChangesAsync();
+
+            return new SystemDto
+            {
+                Id = system.Id,
+                Name = system.Name,
+                Description = system.Description,
+                CreatedAt = system.CreatedAt,
+                Components = new List<ComponentDto>()
+            };
         }
         public Task<SystemDto?> UpdateAsync(int id, CreateSystemRequest request)
         {
