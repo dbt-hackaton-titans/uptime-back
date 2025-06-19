@@ -1,0 +1,29 @@
+syntax: glob
+
+#Files Extensions
+*.orig
+*.exclude
+*.rej
+*.SCC
+
+# Folders
+[Bb]in/
+obj/
+TEMP/
+logs/
+packages/
+[Cc]ompile/
+.vs/
+.idea/
+.vscode/
+.config/
+.containers/
+Properties/
+
+
+#Visual Studio IDE Files
+*.lock
+*.ide
+*.ide-shm
+*.ide-wal
+*.suo
