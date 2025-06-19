@@ -25,7 +25,13 @@ namespace Titans.Uptime.Application.Services
         }
         public Task<SystemDto?> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            SystemDto result = new SystemDto();
+
+            result.Id = 1;
+            result.Name = "Sistema 1";
+            result.Description = "Sistema principal";
+
+            return Task.FromResult<SystemDto?>(result);
         }
         public async Task<SystemDto> CreateAsync(CreateSystemRequest request)
         {
