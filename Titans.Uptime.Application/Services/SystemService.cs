@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,15 +24,30 @@ namespace Titans.Uptime.Application.Services
         {
             throw new NotImplementedException();
         }
-        public Task<SystemDto?> GetByIdAsync(int id)
+        public async Task<SystemDto?> GetByIdAsync(int id)
         {
-            SystemDto result = new SystemDto();
+            var system = await _context.Systems
+            .Include(s => s.Components)
+            .FirstOrDefaultAsync(s => s.Id == id);
 
-            result.Id = 1;
-            result.Name = "Sistema 1";
-            result.Description = "Sistema principal";
+            if (system == null) return null;
 
-            return Task.FromResult<SystemDto?>(result);
+            return new SystemDto
+            {
+                Id = system.Id,
+                Name = system.Name,
+                Description = system.Description,
+                CreatedAt = system.CreatedAt,
+                Components = system.Components.Select(c => new ComponentDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    SystemId = c.SystemId,
+                    SystemName = system.Name,
+                    CreatedAt = c.CreatedAt
+                }).ToList()
+            };
         }
         public async Task<SystemDto> CreateAsync(CreateSystemRequest request)
         {
