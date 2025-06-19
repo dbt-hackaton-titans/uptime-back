@@ -22,13 +22,25 @@ namespace Titans.Uptime.Application.Services
 
         public async Task<IEnumerable<SystemDto>> GetAllAsync()
         {
-            var systems = new List<SystemDto>
+            return await _context.Systems
+            .Include(s => s.Components)
+            .Select(s => new SystemDto
             {
-                new SystemDto { Id = 1, Name = "A", Description = "Sistema A" },
-                new SystemDto { Id = 2, Name = "B", Description = "Sistema B" }
-            };
-
-            return await Task.FromResult(systems);
+                Id = s.Id,
+                Name = s.Name,
+                Description = s.Description,
+                CreatedAt = s.CreatedAt,
+                Components = s.Components.Select(c => new ComponentDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    SystemId = c.SystemId,
+                    SystemName = s.Name,
+                    CreatedAt = c.CreatedAt
+                }).ToList()
+            })
+            .ToListAsync();
         }
         public async Task<SystemDto?> GetByIdAsync(int id)
         {
