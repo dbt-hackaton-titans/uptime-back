@@ -32,12 +32,24 @@ namespace Titans.Uptime.Application.Services
 
         public async Task<UptimeCheckDto?> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            UptimeCheckDto dto = new UptimeCheckDto();
+
+            dto.Id = id;
+            dto.Name = "Ping API";
+
+            return dto;
         }
 
         public async Task<UptimeCheckDto> CreateAsync(CreateUptimeCheckRequest request)
         {
-            throw new NotImplementedException();
+            UptimeCheckDto dto = new UptimeCheckDto();
+            dto.Name = request.Name;
+            dto.SystemId = request.SystemId;
+            dto.CheckUrl = request.CheckUrl;
+            dto.CheckType = request.CheckType;
+            dto.AlertEmails = request.AlertEmails;
+
+            return dto;
         }
 
         public async Task<UptimeCheckDto?> UpdateAsync(int id, CreateUptimeCheckRequest request)
