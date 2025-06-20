@@ -88,13 +88,33 @@ namespace Titans.Uptime.Application.Services
                 Components = new List<ComponentDto>()
             };
         }
-        public Task<SystemDto?> UpdateAsync(int id, CreateSystemRequest request)
+        public async Task<SystemDto?> UpdateAsync(int id, CreateSystemRequest request)
         {
-            throw new NotImplementedException();
+            var system = await _context.Systems.FindAsync(id);
+            if (system == null) return null;
+
+            system.Name = request.Name;
+            system.Description = request.Description;
+
+            await _context.SaveChangesAsync();
+
+            return new SystemDto
+            {
+                Id = system.Id,
+                Name = system.Name,
+                Description = system.Description,
+                CreatedAt = system.CreatedAt,
+                Components = new List<ComponentDto>()
+            };
         }
-        public Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            var system = await _context.Systems.FindAsync(id);
+            if (system == null) return false;
+
+            _context.Systems.Remove(system);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
