@@ -23,6 +23,7 @@ builder.Services.AddDbContext<UptimeMonitorContext>(options =>
 // Services
 builder.Services.AddScoped<ISystemService, SystemService>();
 builder.Services.AddScoped<IUptimeCheckService, UptimeCheckService>();
+builder.Services.AddScoped<IUptimeEventService, UptimeEventService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

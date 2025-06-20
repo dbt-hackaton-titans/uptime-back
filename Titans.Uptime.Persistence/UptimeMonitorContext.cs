@@ -10,6 +10,7 @@ namespace Titans.Uptime.Persistence
         public DbSet<SystemEntity> Systems { get; set; }
         public DbSet<Component> Components { get; set; }
         public DbSet<UptimeCheck> UptimeChecks { get; set; }
+        public DbSet<UptimeEvent> UptimeEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -52,6 +53,29 @@ namespace Titans.Uptime.Persistence
                 entity.HasIndex(e => e.Name).IsUnique();
                 entity.HasIndex(e => e.IsActive);
                 entity.HasIndex(e => e.Status);
+            });
+
+            // UptimeEvent configuration
+            modelBuilder.Entity<UptimeEvent>(entity =>
+            {
+                entity.ToTable("Events");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.EventType).HasConversion<string>();
+                entity.Property(e => e.Category).HasConversion<string>();
+                entity.Property(e => e.MaintenanceType).HasConversion<string>();
+                entity.Property(e => e.ErrorMessage).HasColumnType("TEXT");
+                entity.Property(e => e.Notes).HasColumnType("TEXT");
+                entity.Property(e => e.TicketCode).HasMaxLength(50);
+
+                entity.HasOne(e => e.UptimeCheck)
+                      .WithMany(u => u.Events)
+                      .HasForeignKey(e => e.UptimeCheckId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.StartTime);
+                entity.HasIndex(e => e.EventType);
+                entity.HasIndex(e => e.IsResolved);
+                entity.HasIndex(e => new { e.UptimeCheckId, e.StartTime });
             });
 
             // Seed data for development
