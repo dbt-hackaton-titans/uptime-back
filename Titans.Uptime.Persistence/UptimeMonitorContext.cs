@@ -8,6 +8,8 @@ namespace Titans.Uptime.Persistence
         public UptimeMonitorContext(DbContextOptions<UptimeMonitorContext> options) : base(options) { }
 
         public DbSet<SystemEntity> Systems { get; set; }
+        public DbSet<Component> Components { get; set; }
+        public DbSet<UptimeCheck> UptimeChecks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -20,6 +22,36 @@ namespace Titans.Uptime.Persistence
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Description).HasMaxLength(500);
                 entity.HasIndex(e => e.Name).IsUnique();
+            });
+
+            // UptimeCheck configuration
+            modelBuilder.Entity<UptimeCheck>(entity =>
+            {
+                entity.ToTable("UptimeChecks");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.CheckUrl).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.CheckType).HasConversion<string>();
+                entity.Property(e => e.Status).HasConversion<string>();
+                entity.Property(e => e.ResponseStringType).HasConversion<string>();
+                entity.Property(e => e.RequestHeaders).HasColumnType("TEXT");
+                entity.Property(e => e.AlertEmails).HasColumnType("TEXT");
+                entity.Property(e => e.AlertMessage).HasColumnType("TEXT");
+                entity.Property(e => e.LastError).HasColumnType("TEXT");
+
+                entity.HasOne(e => e.System)
+                      .WithMany(s => s.UptimeChecks)
+                      .HasForeignKey(e => e.SystemId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Component)
+                      .WithMany(c => c.UptimeChecks)
+                      .HasForeignKey(e => e.ComponentId)
+                      .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.Status);
             });
         }
     }
