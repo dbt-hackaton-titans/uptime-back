@@ -23,16 +23,11 @@ namespace Titans.Uptime.Application.Services
 
         public async Task<IEnumerable<UptimeCheckDto>> GetAllAsync()
         {
-            List<UptimeCheckDto> list = new List<UptimeCheckDto>();
-            UptimeCheckDto dto = new UptimeCheckDto();
-            dto.Name = "Check1";
-
-            list.Add(dto);
-            dto = new UptimeCheckDto();
-            dto.Name = "Check2";
-            list.Add(dto);
-
-            return list;
+            return await _context.UptimeChecks
+            .Include(u => u.System)
+            .Include(u => u.Component)
+            .Select(u => MapToDto(u))
+            .ToListAsync();
         }
 
         public async Task<IEnumerable<UptimeCheckDto>> GetActiveAsync()
