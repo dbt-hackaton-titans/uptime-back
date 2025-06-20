@@ -32,7 +32,12 @@ namespace Titans.Uptime.Application.Services
 
         public async Task<IEnumerable<UptimeCheckDto>> GetActiveAsync()
         {
-            throw new NotImplementedException();
+            return await _context.UptimeChecks
+            .Include(u => u.System)
+            .Include(u => u.Component)
+            .Where(u => u.IsActive)
+            .Select(u => MapToDto(u))
+            .ToListAsync();
         }
 
         public async Task<UptimeCheckDto?> GetByIdAsync(int id)
@@ -97,17 +102,81 @@ namespace Titans.Uptime.Application.Services
 
         public async Task<UptimeCheckDto?> UpdateAsync(int id, CreateUptimeCheckRequest request)
         {
-            throw new NotImplementedException();
+            var uptimeCheck = await _context.UptimeChecks
+            .Include(u => u.System)
+            .Include(u => u.Component)
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (uptimeCheck == null) return null;
+
+            // Verify system and component
+            var system = await _context.Systems.FindAsync(request.SystemId);
+            if (system == null)
+                throw new ArgumentException($"System with ID {request.SystemId} not found");
+
+            if (request.ComponentId.HasValue)
+            {
+                var component = await _context.Components.FindAsync(request.ComponentId.Value);
+                if (component == null)
+                    throw new ArgumentException($"Component with ID {request.ComponentId} not found");
+            }
+
+            uptimeCheck.Name = request.Name;
+            uptimeCheck.SystemId = request.SystemId;
+            uptimeCheck.ComponentId = request.ComponentId;
+            uptimeCheck.CheckUrl = request.CheckUrl;
+            uptimeCheck.CheckType = request.CheckType;
+            uptimeCheck.CheckInterval = request.CheckInterval;
+            uptimeCheck.CheckTimeout = request.CheckTimeout;
+            uptimeCheck.RequestHeaders = request.RequestHeaders;
+            uptimeCheck.ResponseStringType = request.ResponseStringType;
+            uptimeCheck.ResponseStringValue = request.ResponseStringValue;
+            uptimeCheck.AlertEmails = request.AlertEmails;
+            uptimeCheck.AlertMessage = request.AlertMessage;
+            uptimeCheck.DownAlertDelay = request.DownAlertDelay;
+            uptimeCheck.DownAlertResend = request.DownAlertResend;
+
+            await _context.SaveChangesAsync();
+
+            // Reload related entities
+            await _context.Entry(uptimeCheck).Reference(u => u.System).LoadAsync();
+            if (uptimeCheck.ComponentId.HasValue)
+            {
+                await _context.Entry(uptimeCheck).Reference(u => u.Component).LoadAsync();
+            }
+
+            return MapToDto(uptimeCheck);
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            var uptimeCheck = await _context.UptimeChecks.FindAsync(id);
+            if (uptimeCheck == null) return false;
+
+            _context.UptimeChecks.Remove(uptimeCheck);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> UpdateStatusAsync(int id, CheckStatus status, string? error = null, double? responseTime = null)
         {
-            throw new NotImplementedException();
+            var uptimeCheck = await _context.UptimeChecks.FindAsync(id);
+            if (uptimeCheck == null) return false;
+
+            var previousStatus = uptimeCheck.Status;
+            uptimeCheck.Status = status;
+            uptimeCheck.LastChecked = DateTime.UtcNow;
+            uptimeCheck.LastError = error;
+            uptimeCheck.LastResponseTime = responseTime;
+
+            // Update LastStatusChange only if status actually changed
+            if (previousStatus != status)
+            {
+                uptimeCheck.LastStatusChange = DateTime.UtcNow;
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         private static UptimeCheckDto MapToDto(UptimeCheck uptimeCheck)
