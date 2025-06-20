@@ -22,6 +22,7 @@ builder.Services.AddDbContext<UptimeMonitorContext>(options =>
 
 // Services
 builder.Services.AddScoped<ISystemService, SystemService>();
+builder.Services.AddScoped<IComponentService, ComponentService>();
 builder.Services.AddScoped<IUptimeCheckService, UptimeCheckService>();
 builder.Services.AddScoped<IUptimeEventService, UptimeEventService>();
 
