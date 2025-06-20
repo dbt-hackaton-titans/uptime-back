@@ -53,6 +53,12 @@ namespace Titans.Uptime.Persistence
                 entity.HasIndex(e => e.IsActive);
                 entity.HasIndex(e => e.Status);
             });
+
+            // Seed data for development
+            modelBuilder.Entity<SystemEntity>().HasData(
+                new SystemEntity { Id = 1, Name = "Web Platform", Description = "Main web application platform", CreatedAt = DateTime.UtcNow },
+                new SystemEntity { Id = 2, Name = "API Gateway", Description = "External API gateway services", CreatedAt = DateTime.UtcNow }
+            );
         }
     }
 }
