@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Net.Mail;
 using System.Text.Json.Serialization;
 using Titans.Uptime.Application.Interfaces;
 using Titans.Uptime.Application.Services;
@@ -25,6 +26,23 @@ builder.Services.AddScoped<ISystemService, SystemService>();
 builder.Services.AddScoped<IComponentService, ComponentService>();
 builder.Services.AddScoped<IUptimeCheckService, UptimeCheckService>();
 builder.Services.AddScoped<IUptimeEventService, UptimeEventService>();
+
+
+// Configuración SMTP
+var smtpHost = builder.Configuration["Smtp:Host"] ?? "sandbox.smtp.mailtrap.io";
+var smtpPort = int.Parse(builder.Configuration["Smtp:Port"] ?? "587");
+var smtpUser = builder.Configuration["Smtp:User"] ?? "30698baa9fb4ef";
+var smtpPass = builder.Configuration["Smtp:Pass"] ?? "8405f7aef7c022";
+var smtpFrom = builder.Configuration["Smtp:From"] ?? "titans@uptime.com";
+
+builder.Services.AddScoped<SmtpClient>(_ => new SmtpClient(smtpHost, smtpPort)
+{
+    Credentials = new System.Net.NetworkCredential(smtpUser, smtpPass),
+    EnableSsl = true
+});
+builder.Services.AddScoped<IEmailService>(provider =>
+    new EmailService(provider.GetRequiredService<SmtpClient>(), smtpFrom)
+);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
