@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using System.Net.Mail;
 using System.Text.Json.Serialization;
 using Titans.Uptime.Application.Interfaces;
@@ -6,6 +7,15 @@ using Titans.Uptime.Application.Services;
 using Titans.Uptime.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration
+                .AddJsonFile("configuration/appsettings.json", false, true)
+                .AddJsonFile("configuration/serilog.json", false, true)
+                .AddUserSecrets<Program>(true, true)
+                .AddKeyPerFile(Path.Combine(Directory.GetCurrentDirectory(), "secrets"), true, true)
+                .AddEnvironmentVariables();
+
+builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration), writeToProviders: true);
 
 // Add services to the container
 builder.Services.AddControllers()
@@ -32,7 +42,7 @@ builder.Services.AddScoped<IUptimeEventService, UptimeEventService>();
 var smtpHost = builder.Configuration["Smtp:Host"] ?? "sandbox.smtp.mailtrap.io";
 var smtpPort = int.Parse(builder.Configuration["Smtp:Port"] ?? "587");
 var smtpUser = builder.Configuration["Smtp:User"] ?? "30698baa9fb4ef";
-var smtpPass = builder.Configuration["Smtp:Pass"] ?? "8405f7aef7c022";
+var smtpPass = builder.Configuration["Smtp:Pass"] ?? "";
 var smtpFrom = builder.Configuration["Smtp:From"] ?? "titans@uptime.com";
 
 builder.Services.AddScoped<SmtpClient>(_ => new SmtpClient(smtpHost, smtpPort)

@@ -1,0 +1,61 @@
+{
+  "Serilog": {
+    "Using": [
+      "Serilog.Enrichers.Environment",
+      "Serilog.Enrichers.ClientInfo",
+      "Serilog.Enrichers.Thread",
+      "Serilog.Expressions",
+      "Serilog.Sinks.File",
+      "Serilog.Sinks.Console"
+    ],
+    "MinimumLevel": {
+      "Default": "Debug",
+      "Override": {
+        "Microsoft": "information",
+        "System": "Error",
+        "MassTransit": "Error",
+        "Polly": "Fatal",
+        "Serilog.Sinks.Email": "Debug"
+      }
+    },
+    "Properties": {
+      "ApplicationName": "UptimeMonitor"
+    },
+    "Enrich": [
+      "FromLogContext",
+      "WithMachineName",
+      "WithThreadId",
+      {
+        "Name": "WithClientIp",
+        "Args": { "HeaderName": "CF-Connecting-IP" }
+      },
+      {
+        "Name": "WithCorrelationId",
+        "Args": {
+          "AddValueIfHeaderAbsence": true
+        }
+      },
+      {
+        "Name": "WithRequestHeader",
+        "Args": { "HeaderName": "User-Agent" }
+      }
+    ],
+    "WriteTo": [
+      {
+        "Name": "File",
+        "Args": {
+          "Path": "logs/titans-uptime-monitor_.log",
+          "RollingInterval": "Day",
+          "RetainedFileCountLimit": 30,
+          "OutputTemplate": "[{Timestamp:yyyy-MM-dd HH:mm:ss,fff}] [{Level}] [{MachineName}] [{ThreadId}] [{RequestId}] [{CorrelationId}] [{ClientIp}] [{UserAgent}] [{SourceContext}] - {Message}{NewLine}{Exception}{NewLine}"
+        }
+      },
+      {
+        "Name": "Console",
+        "Args": {
+          "OutputTemplate": "[{Timestamp:yyyy-MM-dd HH:mm:ss,fff}] [{Level}] [{MachineName}] [{ThreadId}] [{RequestId}] [{CorrelationId}] [{ClientIp}] [{UserAgent}] [{SourceContext}] - {Message}{NewLine}{Exception}{NewLine}"
+        }
+      }
+    ]
+  }
+}
