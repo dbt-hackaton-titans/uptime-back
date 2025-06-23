@@ -3,13 +3,13 @@ name: Titans Uptime CI/CD
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    outputs:
-      artifact-path: ${{ steps.publish.outputs.artifact-path }}
 
     steps:
       - uses: actions/checkout@v4
@@ -24,18 +24,6 @@ jobs:
 
       - name: Build solution
         run: dotnet build Titans.Uptime.sln --configuration Release --no-restore
-
-      - name: Publish artifacts
-        id: publish
-        run: |
-          dotnet publish Titans.Uptime.Api/Titans.Uptime.Api.csproj -c Release -o publish
-          echo "artifact-path=publish" >> $GITHUB_OUTPUT
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-artifact
-          path: publish
 
   test:
     name: Test
@@ -53,13 +41,43 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore Titans.Uptime.sln
 
+      - name: Build solution
+        run: dotnet build Titans.Uptime.sln --configuration Release --no-restore
+
       - name: Run tests
         run: dotnet test Titans.Uptime.sln --configuration Release --no-build --verbosity normal
+
+  publish:
+    name: Publish Artifacts
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Titans.Uptime.sln
+
+      - name: Publish
+        run: |
+          dotnet publish Titans.Uptime.Api/Titans.Uptime.Api.csproj -c Release -o publish
+
+      - name: Upload published artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-artifact
+          path: publish
 
   docker:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    needs: test
+    needs: publish
+    if: github.event_name == 'push'
 
     steps:
       - uses: actions/checkout@v4
@@ -83,7 +101,9 @@ jobs:
     name: Deploy to Render
     runs-on: ubuntu-latest
     needs: docker
+    if: github.event_name == 'push'
 
     steps:
       - name: Deploy to Render
         run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
