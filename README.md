@@ -1,7 +1,3 @@
-Here’s a draft README based on the core files from your repository. You can further customize the description and sections as needed.
-
----
-
 # Uptime Monitor Backend
 
 This repository contains the backend for the Uptime Monitor project, built with ASP.NET Core (.NET 8) and designed to track, monitor, and report on the uptime status of systems and components. It provides RESTful APIs, real-time updates via SignalR, background monitoring services, email notifications, and a web-based health check endpoint.
