@@ -6,22 +6,20 @@ using System.Threading.Tasks;
 using Titans.Uptime.Application.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Titans.Uptime.Application.Services
 {
     public class MonitoringBackgroundService : BackgroundService
     {
-        private readonly IMonitoringService _monitoringService;
-        private readonly IUptimeCheckService _uptimeCheckService;
+        private readonly IServiceProvider _serviceProvider;
         private readonly int _monitoringIntervalSeconds;
 
         public MonitoringBackgroundService(
-            IMonitoringService monitoringService,
-            IUptimeCheckService uptimeCheckService,
+            IServiceProvider serviceProvider,
             IConfiguration configuration)
         {
-            _monitoringService = monitoringService;
-            _uptimeCheckService = uptimeCheckService;
+            _serviceProvider = serviceProvider;
             _monitoringIntervalSeconds = configuration.GetValue<int>("Monitoring:IntervalSeconds", 60);
         }
 
@@ -31,17 +29,23 @@ namespace Titans.Uptime.Application.Services
             {
                 try
                 {
-                    var uptimeChecks = await _uptimeCheckService.GetAllAsync();
+                    using (var scope = _serviceProvider.CreateScope())
+                    {
+                        var monitoringService = scope.ServiceProvider.GetRequiredService<IMonitoringService>();
+                        var uptimeCheckService = scope.ServiceProvider.GetRequiredService<IUptimeCheckService>();
 
-                    var tasks = uptimeChecks
-                        .Where(c => c.IsActive) // O la condición que prefieras
-                        .Select(async check =>
-                        {
-                            var result = await _monitoringService.PerformCheckAsync(check);
-                            await _monitoringService.ProcessCheckResultAsync(check, result);
-                        });
+                        var uptimeChecks = await uptimeCheckService.GetAllAsync();
 
-                    await Task.WhenAll(tasks);
+                        var tasks = uptimeChecks
+                            .Where(c => c.IsActive) // O la condición que prefieras
+                            .Select(async check =>
+                            {
+                                var result = await monitoringService.PerformCheckAsync(check);
+                                await monitoringService.ProcessCheckResultAsync(check, result);
+                            });
+
+                        await Task.WhenAll(tasks);
+                    }
                 }
                 catch (Exception ex)
                 {
