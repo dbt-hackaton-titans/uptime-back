@@ -4,7 +4,10 @@ using System.Net.Mail;
 using System.Text.Json.Serialization;
 using Titans.Uptime.Application.Interfaces;
 using Titans.Uptime.Application.Services;
+using Titans.Uptime.Application.Hubs;
 using Titans.Uptime.Persistence;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +58,18 @@ builder.Services.AddScoped<IEmailService>(provider =>
 );
 
 builder.Services.AddHostedService<MonitoringBackgroundService>();
+builder.Services.AddSignalR();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "https://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -76,6 +91,16 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<MonitoringHub>("/monitoringHub");
+
+app.UseCors("AllowFrontend");
+
+app.MapHealthChecks("/healthz", new HealthCheckOptions
+{
+    Predicate = _ => true,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 // Ensure database is created
 using (var scope = app.Services.CreateScope())
