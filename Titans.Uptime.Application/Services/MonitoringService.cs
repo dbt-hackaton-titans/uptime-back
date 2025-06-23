@@ -7,6 +7,8 @@ using Titans.Uptime.Application.Interfaces;
 using Titans.Uptime.Domain.Models;
 using Titans.Uptime.Domain;
 using System.Net.Http;
+using Microsoft.AspNetCore.SignalR;
+using Titans.Uptime.Application.Hubs;
 
 namespace Titans.Uptime.Application.Services
 {
@@ -15,15 +17,18 @@ namespace Titans.Uptime.Application.Services
         private readonly IUptimeEventService _uptimeEventService;
         private readonly IEmailService _emailService;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHubContext<MonitoringHub> _hubContext;
 
         public MonitoringService(
             IUptimeEventService uptimeEventService,
             IEmailService emailService,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            IHubContext<MonitoringHub> hubContext)
         {
             _uptimeEventService = uptimeEventService;
             _emailService = emailService;
             _httpClientFactory = httpClientFactory;
+            _hubContext = hubContext;
         }
 
         public async Task<CheckResult> PerformCheckAsync(UptimeCheckDto uptimeCheck)
@@ -80,6 +85,7 @@ namespace Titans.Uptime.Application.Services
                     ResponseTime = result.ResponseTime
                 };
                 await _emailService.SendDownAlertAsync(uptimeCheck, downEvent);
+                await NotifyClientsAsync("System is down", new { uptimeCheck.Id, downEvent });
             }
             else if (eventType == EventType.Up)
             {
@@ -91,7 +97,13 @@ namespace Titans.Uptime.Application.Services
                     ResponseTime = result.ResponseTime
                 };
                 await _emailService.SendUpAlertAsync(uptimeCheck, upEvent);
+                await NotifyClientsAsync("System is back up", new { uptimeCheck.Id, upEvent });
             }
+        }
+
+        private async Task NotifyClientsAsync(string message, object? data = null)
+        {
+            await _hubContext.Clients.All.SendAsync("UptimeAlert", message, data);
         }
     }
 }
