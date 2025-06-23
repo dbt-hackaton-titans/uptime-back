@@ -40,7 +40,6 @@ builder.Services.AddScoped<IComponentService, ComponentService>();
 builder.Services.AddScoped<IUptimeCheckService, UptimeCheckService>();
 builder.Services.AddScoped<IUptimeEventService, UptimeEventService>();
 
-
 // Configuración SMTP
 var smtpHost = builder.Configuration["Smtp:Host"] ?? "sandbox.smtp.mailtrap.io";
 var smtpPort = int.Parse(builder.Configuration["Smtp:Port"] ?? "587");
@@ -57,6 +56,7 @@ builder.Services.AddScoped<IEmailService>(provider =>
     new EmailService(provider.GetRequiredService<SmtpClient>(), smtpFrom)
 );
 
+builder.Services.AddScoped<IMonitoringService, MonitoringService>();
 builder.Services.AddHostedService<MonitoringBackgroundService>();
 builder.Services.AddSignalR();
 
@@ -79,6 +79,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new() { Title = "Uptime Monitor API", Version = "v1" });
 });
 
+builder.Services.AddHttpClient();
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
