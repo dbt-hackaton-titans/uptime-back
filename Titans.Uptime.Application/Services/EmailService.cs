@@ -41,7 +41,7 @@ namespace Titans.Uptime.Application.Services
             await _smtpClient.SendMailAsync(mailMessage);
         }
 
-        public async Task SendDownAlertAsync(UptimeCheck uptimeCheck, UptimeEvent downEvent)
+        public async Task SendDownAlertAsync(UptimeCheckDto uptimeCheck, UptimeEvent downEvent)
         {
             // Aquí defines el subject y el mensaje según tus reglas de monitoreo
             var subject = $"ALERTA: {uptimeCheck.Name} está CAÍDO ({downEvent.StartTime:g})";
@@ -64,7 +64,7 @@ namespace Titans.Uptime.Application.Services
             await SendAlertAsync(recipients, subject, message);
         }
 
-        public async Task SendUpAlertAsync(UptimeCheck uptimeCheck, UptimeEvent upEvent)
+        public async Task SendUpAlertAsync(UptimeCheckDto uptimeCheck, UptimeEvent upEvent)
         {
             var subject = $"RECUPERADO: {uptimeCheck.Name} está ARRIBA ({upEvent.StartTime:g})";
             var duration = upEvent.EndTime.HasValue && upEvent.StartTime != default(DateTime)
@@ -93,7 +93,7 @@ namespace Titans.Uptime.Application.Services
         /// Método auxiliar para obtener los emails de alerta del UptimeCheck.
         /// Ajusta esto según cómo guardes los emails (separados por ; o , en la propiedad AlertEmails).
         /// </summary>
-        private string[] GetAlertEmails(UptimeCheck uptimeCheck)
+        private string[] GetAlertEmails(UptimeCheckDto uptimeCheck)
         {
             if (string.IsNullOrWhiteSpace(uptimeCheck.AlertEmails))
                 return Array.Empty<string>();

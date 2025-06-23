@@ -54,6 +54,8 @@ builder.Services.AddScoped<IEmailService>(provider =>
     new EmailService(provider.GetRequiredService<SmtpClient>(), smtpFrom)
 );
 
+builder.Services.AddHostedService<MonitoringBackgroundService>();
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

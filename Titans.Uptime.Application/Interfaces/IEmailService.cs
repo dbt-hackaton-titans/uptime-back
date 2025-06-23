@@ -10,7 +10,7 @@ namespace Titans.Uptime.Application.Interfaces
     public interface IEmailService
     {
         Task SendAlertAsync(string[] recipients, string subject, string message);
-        Task SendDownAlertAsync(UptimeCheck uptimeCheck, UptimeEvent downEvent);
-        Task SendUpAlertAsync(UptimeCheck uptimeCheck, UptimeEvent upEvent);
+        Task SendDownAlertAsync(UptimeCheckDto uptimeCheck, UptimeEvent downEvent);
+        Task SendUpAlertAsync(UptimeCheckDto uptimeCheck, UptimeEvent upEvent);
     }
 }
