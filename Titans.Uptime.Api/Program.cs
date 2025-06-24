@@ -110,6 +110,8 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<UptimeMonitorContext>();
     context.Database.EnsureCreated();
+
+    SeedData.Initialize(scope.ServiceProvider);
 }
 
 app.Run();
