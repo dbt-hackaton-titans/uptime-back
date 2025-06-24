@@ -77,12 +77,6 @@ namespace Titans.Uptime.Persistence
                 entity.HasIndex(e => e.IsResolved);
                 entity.HasIndex(e => new { e.UptimeCheckId, e.StartTime });
             });
-
-            // Seed data for development
-            modelBuilder.Entity<SystemEntity>().HasData(
-                new SystemEntity { Id = 1, Name = "Web Platform", Description = "Main web application platform", CreatedAt = DateTime.UtcNow },
-                new SystemEntity { Id = 2, Name = "API Gateway", Description = "External API gateway services", CreatedAt = DateTime.UtcNow }
-            );
         }
     }
 }
